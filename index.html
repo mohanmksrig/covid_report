@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>-: Mohankumar - Covid Report :-</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="scripts/jquery-3.6.0.min.js"></script>
+    <script src="scripts/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Covid Report</h1>
+        <ul class="header-links">
+            <li><a href="#">Export to PDF <img src="images/download.png" alt="" width="20" height="20"></a></li>
+            <li><a href="#">Notes (3)<img src="images/note.png" alt="" width="20" height="20"></a></li>
+            <li><a href="#">Filter <img src="images/filter.png" alt="" width="20" height="20"></a></li>
+        </ul>
+    </header>
+    <div class="container">
+        <div class="chart-box">
+            <h2>New Cases Over Time</h2>
+            <canvas id="verticalBarChart" width="400" height="200"></canvas>
+        </div>
+        <div class="chart-box">
+            <h2>Cumulative Cases</h2>
+            <canvas id="donutPieChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        /*Script Started */
+        $(document).ready(function() {
+            const apiUrl = "https://api.coronavirus.data.gov.uk/v1/data";
+            const queryParams = {
+                filters: "areaType=overview",
+                structure: JSON.stringify({
+                    date: "date",
+                    newCases: "newCasesByPublishDate",
+                    cumCases: "cumCasesByPublishDate",
+                }),
+            };
+
+            $.get(apiUrl, queryParams, function(data) {
+                //console.log(data);
+                const labels = [];
+                const newCases = [];
+                const cumCases = [];
+
+                data.data.forEach(item => {
+                    labels.push(item.date);
+                    newCases.push(item.newCases);
+                    cumCases.push(item.cumCases);
+                });
+
+                createVerticalBarChart(labels, newCases);
+                createDonutPieChart(cumCases);
+            });
+        });
+
+        function createVerticalBarChart(labels, values) {
+            var ctx = document.getElementById('verticalBarChart').getContext('2d');
+
+            var barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'New Cases',
+                        data: values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function createDonutPieChart(values) {
+            var ctx = document.getElementById('donutPieChart').getContext('2d');
+
+            var pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cumulative Cases'],
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                        borderColor: ['rgba(75, 192, 192, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+            });
+        }
+        /*Script Ended */
+    </script>
+</body>
+</html>
